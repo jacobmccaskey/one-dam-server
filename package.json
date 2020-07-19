@@ -1,0 +1,21 @@
+{
+  "name": "one-dam-server",
+  "version": "1.0.0",
+  "description": "server-side",
+  "main": "index.js",
+  "author": "Jake McCaskey",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.714.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-graphql": "^0.11.0",
+    "graphql": "^15.3.0",
+    "helmet": "^3.23.3",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.27.0",
+    "mongoose": "^5.9.22",
+    "validate-js": "^2.0.1"
+  }
+}
