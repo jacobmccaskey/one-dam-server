@@ -2,6 +2,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require("helmet");
+const jwt = require("jsonwebtoken");
+const auth = require("./auth/authentication");
+const Schema = require("./schema/schema");
 
 const mongoose = require("mongoose");
 var app = express();
@@ -15,35 +18,20 @@ mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
 
-var Schema = mongoose.Schema;
+//compile model from Schema
+var User = mongoose.model("User", Schema.userSchema);
+var Cart = mongoose.model("Cart", Schema.cartSchema);
+var Inventory = mongoose.model("Inventory", Schema.inventorySchema);
 
-var inventorySchema = new Schema({
-  name: String,
-  imageUrl: String,
-  price: Number,
-  description: String,
-});
-var userSchema = new Schema(
-  {
-    name: String,
-    email: String,
-    userCart: [{ type: Schema.Types.ObjectId, ref: "Cart" }],
-  },
-  { collection: "Users" }
-);
-
-var cartSchema = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: "User" },
-  items: [],
+app.get("/jwt", (req, res) => {
+  let token = jwt.sign({ body: "stuff" }, "SecretPassphrase", {
+    algorithm: "HS256",
+  });
+  res.send(token);
 });
 
-//compile model from schema
-var User = mongoose.model("User", userSchema);
-var Cart = mongoose.model("Cart", cartSchema);
-var Inventory = mongoose.model("Inventory", inventorySchema);
-
-app.get("/", (req, res) => {
-  res.send("hello friend");
+app.get("/secret", auth.isAuthorized, (req, res) => {
+  res.json({ message: "Super duper secret" });
 });
 
 app.get("/user", (req, res) => {
