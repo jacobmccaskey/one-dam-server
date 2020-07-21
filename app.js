@@ -1,9 +1,9 @@
 const express = require("express");
+require("dotenv").config();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require("helmet");
-const jwt = require("jsonwebtoken");
-const auth = require("./auth/authentication");
+const authController = require("./auth/AuthController");
 const Schema = require("./schema/schema");
 
 const mongoose = require("mongoose");
@@ -23,16 +23,7 @@ var User = mongoose.model("User", Schema.userSchema);
 var Cart = mongoose.model("Cart", Schema.cartSchema);
 var Inventory = mongoose.model("Inventory", Schema.inventorySchema);
 
-app.get("/jwt", (req, res) => {
-  let token = jwt.sign({ body: "stuff" }, "SecretPassphrase", {
-    algorithm: "HS256",
-  });
-  res.send(token);
-});
-
-app.get("/secret", auth.isAuthorized, (req, res) => {
-  res.json({ message: "Super duper secret" });
-});
+app.use("/api/auth", authController);
 
 app.get("/user", (req, res) => {
   User.find()

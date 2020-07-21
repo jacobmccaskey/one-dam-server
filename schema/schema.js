@@ -12,6 +12,7 @@ var userSchema = new Schema(
   {
     name: String,
     email: String,
+    password: String,
     userCart: [{ type: Schema.Types.ObjectId, ref: "Cart" }],
   },
   { collection: "Users" }
