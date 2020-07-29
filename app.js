@@ -4,7 +4,8 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require("helmet");
 const authController = require("./auth/AuthController");
-const adminConsole = require("./admin/admin");
+const store = require("./admin/admin");
+const adminController = require("./auth/adminController");
 
 const mongoose = require("mongoose");
 var app = express();
@@ -19,8 +20,9 @@ var db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
 
 app.use("/api/auth", authController);
+app.use("/api/admin", adminController);
 
-app.use("/admin", adminConsole);
+app.use("/admin", store);
 
 app.listen(PORT, () => {
   console.log("server is live");

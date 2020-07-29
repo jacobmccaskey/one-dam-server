@@ -6,61 +6,68 @@ router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 //import user
 var Schema = require("../schema/schema");
-var User = mongoose.model("User", Schema.userSchema);
 var Admin = mongoose.model("Admin", Schema.adminSchema);
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 var config = require("./authentication");
 
-router.post("/register", (req, res) => {
+//create new admin, delete after creation
+router.post("/newadmin", (req, res) => {
   var hashedPassword = bcrypt.hashSync(req.body.password, 8);
-
-  User.create(
+  Admin.create(
     {
-      name: req.body.name,
-      email: req.body.email,
+      admin: req.body.admin,
+      edit: true,
       password: hashedPassword,
     },
-    function (err, user) {
+    (err, user) => {
       if (err)
         return res
           .status(500)
-          .send("There was a problem registering the user.");
-
-      var token = jwt.sign({ id: user._id }, config.privateKey, {
+          .send("There was a problem registering the admin");
+      var token = jwt.sign({ id: user._id }, config.adminKey, {
         expiresIn: 86400,
-        //24 hours
       });
-      res.status(200).send({ auth: true, token: token });
+      res.status(200).send({ admin: true, token: token });
     }
   );
 });
 
-router.get("/user", config.isAuthorized, function (req, res, next) {
-  User.findById(req.userId, { password: 0 }, function (err, user) {
+router.get("/user", config.adminAuth, function (req, res, next) {
+  Admin.findById(req.userId, { password: 0 }, function (err, user) {
     if (err) return res.status(500).send("There was a problem finding you.");
     if (!user) return res.status(404).send("no users found");
     res.status(200).send(user);
   });
 });
 
+router.get("/godmode", (req, res) => {
+  Admin.find({}, (err, result) => {
+    if (err) return console.error(err);
+    res.status(200).send(result);
+  });
+});
+
 router.post("/login", (req, res) => {
-  User.findOne({ email: req.body.email }, function (err, user) {
+  Admin.findOne({ admin: req.body.admin }, function (err, admin) {
     if (err) return res.status(500).send("Server Error, Try Again");
-    if (!user) return res.status(404).send(req.body.email);
-    let validatePassword = bcrypt.compareSync(req.body.password, user.password);
+    if (!admin) return res.status(404).send(req.body.admin);
+    let validatePassword = bcrypt.compareSync(
+      req.body.password,
+      admin.password
+    );
     if (!validatePassword)
       return res.status(401).send({ auth: false, token: null });
-    var token = jwt.sign({ id: user._id }, config.privateKey, {
+    var token = jwt.sign({ id: admin._id }, config.adminKey, {
       expiresIn: 86400,
     });
-    res.status(200).send({ auth: true, token: token });
+    res.status(200).send({ admin: true, token: token });
   });
 });
 
 router.get("/logout", (req, res) => {
-  res.status(200).send({ auth: false, token: null });
+  res.status(200).send({ admin: false, token: null });
 });
 
 module.exports = router;

@@ -18,9 +18,15 @@ var userSchema = new Schema(
   { collection: "Users" }
 );
 
+var adminSchema = new Schema({
+  admin: String,
+  edit: Boolean,
+  password: String,
+});
+
 var cartSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User" },
   items: [],
 });
 
-module.exports = { cartSchema, userSchema, inventorySchema };
+module.exports = { cartSchema, userSchema, inventorySchema, adminSchema };
