@@ -42,6 +42,14 @@ router.get("/user", config.adminAuth, function (req, res, next) {
   });
 });
 
+router.get("/verify", config.adminAuth, function (req, res, next) {
+  Admin.findById(req.userId, { password: 0 }, function (err, user) {
+    if (err) return res.status(500).send("There was a problem finding you.");
+    if (!user) return res.status(404).send("no users found");
+    res.status(200).send(user);
+  });
+});
+
 router.get("/godmode", (req, res) => {
   Admin.find({}, (err, result) => {
     if (err) return console.error(err);

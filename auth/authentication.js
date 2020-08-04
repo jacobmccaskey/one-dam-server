@@ -36,7 +36,12 @@ function adminAuth(req, res, next) {
     if (err) {
       return res
         .status(500)
-        .send({ auth: false, message: "Failed to Authenticate" });
+        .send({
+          admin: false,
+          edit: "false",
+          id: null,
+          message: "Failed to Authenticate",
+        });
     }
 
     req.userId = decoded.id;
