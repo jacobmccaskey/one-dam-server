@@ -50,7 +50,7 @@ router.get("/verify", config.adminAuth, function (req, res, next) {
   });
 });
 
-router.get("/godmode", (req, res) => {
+router.get("/godmode", config.adminAuth, (req, res, next) => {
   Admin.find({}, (err, result) => {
     if (err) return console.error(err);
     res.status(200).send(result);

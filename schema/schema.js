@@ -13,6 +13,10 @@ var userSchema = new Schema(
     name: String,
     email: String,
     password: String,
+    address: String,
+    orders: Array,
+    cart: Array,
+    notes: String,
     userCart: [{ type: Schema.Types.ObjectId, ref: "Cart" }],
   },
   { collection: "Users" }

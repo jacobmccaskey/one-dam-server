@@ -16,7 +16,7 @@ function isAuthorized(req, res, next) {
     if (err) {
       return res
         .status(500)
-        .send({ auth: false, message: "Failed to Authenticate" });
+        .send({ auth: false, token: null, message: "Failed to Authenticate" });
     }
 
     req.userId = decoded.id;
@@ -34,14 +34,13 @@ function adminAuth(req, res, next) {
 
   jwt.verify(token, adminKey, (err, decoded) => {
     if (err) {
-      return res
-        .status(500)
-        .send({
-          admin: false,
-          edit: "false",
-          id: null,
-          message: "Failed to Authenticate",
-        });
+      return res.status(500).send({
+        admin: false,
+        edit: "false",
+        token: null,
+        id: null,
+        message: "Failed to Authenticate",
+      });
     }
 
     req.userId = decoded.id;

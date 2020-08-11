@@ -6,6 +6,7 @@ const helmet = require("helmet");
 const authController = require("./auth/AuthController");
 const store = require("./admin/admin");
 const adminController = require("./auth/adminController");
+const userHandler = require("./store/userHandler");
 
 const mongoose = require("mongoose");
 var app = express();
@@ -20,7 +21,8 @@ var db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
 
 app.use("/api/auth", authController);
-app.use("/api/admin", adminController);
+app.use("/api/admin", adminController); // /login
+app.use("/api", userHandler); // /addtocart && /store && /updateaccount
 
 app.use("/admin", store);
 
