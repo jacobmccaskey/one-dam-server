@@ -16,6 +16,7 @@ var userSchema = new Schema(
     address: String,
     orders: Array,
     cart: Array,
+    favorites: Array,
     notes: String,
     userCart: [{ type: Schema.Types.ObjectId, ref: "Cart" }],
   },
