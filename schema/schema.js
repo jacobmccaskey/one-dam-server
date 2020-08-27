@@ -10,10 +10,12 @@ var inventorySchema = new Schema({
 });
 var userSchema = new Schema(
   {
-    name: String,
+    firstName: String,
+    lastName: String,
     email: String,
     password: String,
     address: String,
+    location: String,
     orders: Array,
     cart: Array,
     favorites: Array,
@@ -24,6 +26,9 @@ var userSchema = new Schema(
 );
 
 var adminSchema = new Schema({
+  firstName: String,
+  lastName: String,
+  location: String,
   admin: String,
   edit: Boolean,
   password: String,

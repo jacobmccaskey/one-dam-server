@@ -14,10 +14,10 @@ var config = require("./authentication");
 
 router.post("/register", (req, res) => {
   var hashedPassword = bcrypt.hashSync(req.body.password, 8);
-
   User.create(
     {
-      name: req.body.name,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
       email: req.body.email,
       password: hashedPassword,
     },
@@ -39,20 +39,23 @@ router.post("/register", (req, res) => {
 router.post("/login", (req, res) => {
   User.findOne({ email: req.body.email }, function (err, user) {
     if (err) return res.status(500).send("Server Error, Try Again");
-    if (!user) return res.status(404).send(req.body.email);
+    if (!user) return res.status(404).send({ status: 404 });
     let validatePassword = bcrypt.compareSync(req.body.password, user.password);
     if (!validatePassword)
-      return res.status(401).send({ auth: false, token: null });
+      return res.status(401).send({ auth: false, token: null, status: 401 });
     var token = jwt.sign({ id: user._id }, config.privateKey, {
       expiresIn: 86400,
     });
     res.status(200).send({
+      status: 200,
       auth: true,
       token: token,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       cart: user.cart,
       address: user.address,
       email: user.email,
+      favorites: user.favorites,
     });
   });
 });

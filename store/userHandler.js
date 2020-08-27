@@ -24,22 +24,36 @@ app.get("/store", (req, res) => {
 
 app.get("/user", config.isAuthorized, function (req, res, next) {
   User.findById(req.userId, { password: 0 }, function (err, user) {
-    if (err) return res.status(500).send("There was a problem finding you.");
-    if (!user) return res.status(404).send("no users found");
+    if (err)
+      return res
+        .status(500)
+        .send("There was a problem finding you.", { auth: false });
+    if (!user) return res.status(404).send("no users found", { auth: false });
     res.status(200).send({
       cart: user.cart,
+      favorites: user.favorites,
       address: user.address,
       email: user.email,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      auth: true,
+      status: 200,
     });
   });
 });
 
+//fix this
 app.post("/addtocart", config.isAuthorized, (req, res, next) => {
+  let currentCart = [];
   if (!req.body.item) return res.status(400).send("bad request");
+
+  User.findById(req.userId, (err, user) =>
+    err ? console.log(err) : currentCart.push(user.cart)
+  );
+
   User.findByIdAndUpdate(
     req.userId,
-    { cart: req.body.item },
+    { cart: [...currentCart, req.body.item] },
     { new: true },
     function (err, user) {
       if (err) return res.status(500).send("There was a problem finding you.");
@@ -67,7 +81,14 @@ app.post("/updateaccount", config.isAuthorized, (req, res, next) => {
     );
   }
 
-  const editable = ["password", "name", "address", "email", "cart"];
+  const editable = [
+    "password",
+    "firstName",
+    "lastName",
+    "address",
+    "email",
+    "cart",
+  ];
   let canEdit = editable.find((value) => value === req.body.target);
 
   if (!canEdit) return res.status(400).send("no matching fields");
