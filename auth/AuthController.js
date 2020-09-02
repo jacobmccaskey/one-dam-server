@@ -31,7 +31,16 @@ router.post("/register", (req, res) => {
         expiresIn: 86400,
         //24 hours
       });
-      res.status(200).send({ auth: true, token: token });
+      res.status(200).send({
+        auth: true,
+        token: token,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        address: user.address,
+        cart: user.cart,
+        favorites: user.favorites,
+        status: 200,
+      });
     }
   );
 });

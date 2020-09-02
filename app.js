@@ -20,7 +20,7 @@ mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
 
-app.use("/api/auth", authController);
+app.use("/api/auth", authController); //register user
 app.use("/api/admin", adminController); // /login
 app.use("/api", userHandler); // /addtocart && /store && /updateaccount
 

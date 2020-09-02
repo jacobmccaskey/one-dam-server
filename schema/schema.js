@@ -5,8 +5,12 @@ var Schema = mongoose.Schema;
 var inventorySchema = new Schema({
   name: String,
   imageUrl: String,
+  images: Array,
   price: Number,
   description: String,
+  quantity: Number,
+  size: String,
+  vendor: String,
 });
 var userSchema = new Schema(
   {
