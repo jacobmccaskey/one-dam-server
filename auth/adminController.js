@@ -50,12 +50,12 @@ router.get("/verify", config.adminAuth, function (req, res, next) {
   });
 });
 
-router.get("/godmode", config.adminAuth, (req, res, next) => {
-  Admin.find({}, (err, result) => {
-    if (err) return console.error(err);
-    res.status(200).send(result);
-  });
-});
+// router.get("/godmode", config.adminAuth, (req, res, next) => {
+//   Admin.find({}, (err, result) => {
+//     if (err) return console.error(err);
+//     res.status(200).send(result);
+//   });
+// });
 
 router.post("/login", (req, res) => {
   Admin.findOne({ admin: req.body.admin }, function (err, admin) {

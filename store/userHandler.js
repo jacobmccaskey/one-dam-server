@@ -12,11 +12,19 @@ var config = require("../auth/authentication");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+app.get("/item/:id", (req, res) => {
+  Inventory.findById(req.params.id).exec((err, item) => {
+    if (err) {
+      return res.status(400).send({ serverResponse: 400 });
+    }
+    res.send(item);
+  });
+});
+
 app.get("/store", (req, res) => {
   Inventory.find().exec((err, items) => {
     if (err) {
-      handleError(err);
-      res.end();
+      res.status(400).send({ serverResponse: 400 });
     }
     res.send(items);
   });

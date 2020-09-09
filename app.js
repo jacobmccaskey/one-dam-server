@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require("helmet");
 const authController = require("./auth/AuthController");
-const store = require("./admin/admin");
+const adminAPI = require("./admin/admin");
 const adminController = require("./auth/adminController");
 const userHandler = require("./store/userHandler");
 
@@ -24,7 +24,7 @@ app.use("/api/auth", authController); //register user
 app.use("/api/admin", adminController); // /login
 app.use("/api", userHandler); // /addtocart && /store && /updateaccount
 
-app.use("/admin", store);
+app.use("/admin", adminAPI);
 
 app.listen(PORT, () => {
   console.log("server is live");

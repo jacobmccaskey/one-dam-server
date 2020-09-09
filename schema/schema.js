@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 var Schema = mongoose.Schema;
 
+var itemSize = new Schema({
+  size: String,
+  gender: String,
+  quantity: Number,
+});
+
 var inventorySchema = new Schema({
   name: String,
   imageUrl: String,
@@ -9,9 +15,12 @@ var inventorySchema = new Schema({
   price: Number,
   description: String,
   quantity: Number,
-  size: String,
+  orders: Number,
+  colors: [new Schema({ color: String })],
+  sizes: [itemSize],
   vendor: String,
 });
+
 var userSchema = new Schema(
   {
     firstName: String,
@@ -29,9 +38,24 @@ var userSchema = new Schema(
   { collection: "Users" }
 );
 
+var orderSchema = new Schema({
+  address: String,
+  shipped: Boolean,
+  name: String,
+  details: String,
+  items: Array,
+  vendor: String,
+  email: String,
+  fulfilled: Boolean,
+});
+
 var adminSchema = new Schema({
   firstName: String,
   lastName: String,
+  vendor: String,
+  toShip: Array,
+  fulfilled: Array,
+  orders: Array,
   location: String,
   admin: String,
   edit: Boolean,
@@ -43,4 +67,10 @@ var cartSchema = new Schema({
   items: [],
 });
 
-module.exports = { cartSchema, userSchema, inventorySchema, adminSchema };
+module.exports = {
+  cartSchema,
+  userSchema,
+  inventorySchema,
+  adminSchema,
+  orderSchema,
+};

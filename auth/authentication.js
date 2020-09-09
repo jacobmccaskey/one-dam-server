@@ -3,6 +3,8 @@ const fs = require("fs");
 
 const privateKey = fs.readFileSync("./private.pem", "utf-8");
 const adminKey = fs.readFileSync("./admin.pem", "utf-8");
+//this is middleware to validate requests by users or admins,
+//private pem files are used to encrypt tokens
 
 function isAuthorized(req, res, next) {
   let token = req.headers["x-access-token"];
@@ -23,7 +25,7 @@ function isAuthorized(req, res, next) {
     next();
   });
 }
-
+//validates 24 hour token in any request made by admin
 function adminAuth(req, res, next) {
   let token = req.headers["x-access-token"];
   if (!token) {
