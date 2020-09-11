@@ -7,6 +7,7 @@ router.use(bodyParser.json());
 //import user
 var Schema = require("../schema/schema");
 var Admin = mongoose.model("Admin", Schema.adminSchema);
+var validator = require("validator");
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
@@ -50,13 +51,7 @@ router.get("/verify", config.adminAuth, function (req, res, next) {
   });
 });
 
-// router.get("/godmode", config.adminAuth, (req, res, next) => {
-//   Admin.find({}, (err, result) => {
-//     if (err) return console.error(err);
-//     res.status(200).send(result);
-//   });
-// });
-
+//add validator to req.body
 router.post("/login", (req, res) => {
   Admin.findOne({ admin: req.body.admin }, function (err, admin) {
     if (err) return res.status(500).send("Server Error, Try Again");
