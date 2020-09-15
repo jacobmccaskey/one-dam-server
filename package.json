@@ -19,5 +19,24 @@
     "mongoose": "^5.9.22",
     "validate-js": "^2.0.1",
     "validator": "^13.1.1"
-  }
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jacobmccaskey/one-dam-server.git"
+  },
+  "keywords": [
+    "oneDAm"
+  ],
+  "bugs": {
+    "url": "https://github.com/jacobmccaskey/one-dam-server/issues"
+  },
+  "homepage": "https://github.com/jacobmccaskey/one-dam-server#readme"
 }

@@ -38,7 +38,7 @@ function adminAuth(req, res, next) {
     if (err) {
       return res.status(500).send({
         admin: false,
-        edit: "false",
+        edit: false,
         token: null,
         id: null,
         message: "Failed to Authenticate",

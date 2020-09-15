@@ -85,7 +85,6 @@ app.get("/store", config.adminAuth, (req, res) => {
       res.end();
     }
     res.send(items);
-    console.log("working");
   });
 });
 

@@ -53,6 +53,7 @@ router.get("/verify", config.adminAuth, function (req, res, next) {
 
 //add validator to req.body
 router.post("/login", (req, res) => {
+  console.log("working");
   Admin.findOne({ admin: req.body.admin }, function (err, admin) {
     if (err) return res.status(500).send("Server Error, Try Again");
     if (!admin) return res.status(404).send(req.body.admin);
@@ -65,7 +66,7 @@ router.post("/login", (req, res) => {
     var token = jwt.sign({ id: admin._id }, config.adminKey, {
       expiresIn: 86400,
     });
-    res.status(200).send({ admin: true, token: token });
+    res.status(200).send({ admin: true, token: token, fuck: "fefjd" });
   });
 });
 

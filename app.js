@@ -14,9 +14,14 @@ app.use(helmet());
 app.use(cors());
 app.use(bodyParser.json());
 var PORT = 4545;
-
-var mongoDB = "mongodb://127.0.0.1/test";
-mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
+//127.0.0.1    `mongodb://127.0.0.1/test`
+const { MONGO_HOSTNAME, MONGO_DB, MONGO_PORT } = process.env;
+var mongoDB = `mongodb://${MONGO_HOSTNAME}:${MONGO_PORT}/${MONGO_DB}`;
+mongoose
+  .connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true }, () => {
+    console.log("mongo connection established");
+  })
+  .catch((err) => console.error(err));
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
 
