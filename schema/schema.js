@@ -73,4 +73,5 @@ module.exports = {
   inventorySchema,
   adminSchema,
   orderSchema,
+  itemSize,
 };

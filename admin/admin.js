@@ -4,6 +4,7 @@ const Schema = require("../schema/schema");
 var bodyParser = require("body-parser");
 var config = require("../auth/authentication");
 var handleError = require("./error");
+const AWS = require("aws-sdk");
 
 const app = express.Router();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -13,6 +14,29 @@ var User = mongoose.model("User", Schema.userSchema);
 var Cart = mongoose.model("Cart", Schema.cartSchema);
 var Inventory = mongoose.model("Inventory", Schema.inventorySchema);
 
+//initialize s3 interface
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWSID,
+  secretAccessKey: process.env.AWSKEY,
+});
+
+//function for uploading file to s3 bucket
+const uploadFileToS3 = (filesArr, photoURIS) => {
+  filesArr.forEach((file) => {
+    const params = {
+      Bucket: process.env.BUCKET,
+      Key: `${file.name}`,
+      Body: file.arrayBuffer,
+    };
+    s3.upload(params, (err, data) => {
+      if (err) throw err;
+
+      return photoURIS.push(data);
+    });
+  });
+};
+
+//fetches all USERS
 app.get("/db", config.adminAuth, (req, res) => {
   User.find().exec((err, users) => {
     if (err) {
@@ -26,27 +50,35 @@ app.get("/db", config.adminAuth, (req, res) => {
 app.post("/addItem", config.adminAuth, (req, res) => {
   const {
     name,
-    imageUrl,
     images,
     price,
     description,
     vendor,
     quantity,
     sizes,
+    colors,
   } = req.body;
+
+  const imageUrls = [];
+  const colorsFormatted = colors.map((color) => ({ color: color }));
+
+  uploadFileToS3(images, imageUrls);
 
   var inventory = new Inventory({
     name: name,
     price: price,
-    imageUrl: imageUrl,
-    images: images,
+    images: imageUrls,
     description: description,
     vendor: vendor,
     quantity: quantity,
     sizes: sizes,
+    colors: colorsFormatted,
   });
   inventory.save(function (err) {
-    if (err) return handleError(err);
+    if (err)
+      return res
+        .status(400)
+        .send({ response: "problem saving inventory", error: err });
   });
   res.send(inventory);
   res.end();
