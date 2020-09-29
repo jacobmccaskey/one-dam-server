@@ -4,7 +4,6 @@ const Schema = require("../schema/schema");
 var bodyParser = require("body-parser");
 var config = require("../auth/authentication");
 var handleError = require("./error");
-const AWS = require("aws-sdk");
 
 const app = express.Router();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -77,12 +76,8 @@ app.delete("/delete/:ID", config.adminAuth, (req, res) => {
   if (req.params.ID === null) return res.status(404);
   Inventory.findByIdAndDelete(req.params.ID, function (err, item) {
     if (err) return handleError(err);
-    res.status(200).send(item);
+    res.status(200).send("item deleted");
   });
-  // Inventory.find().exec((err, items) => {
-  //   if (err) return handleError(err);
-  //   res.status(200).send(items);
-  // });
 });
 
 //display store items
