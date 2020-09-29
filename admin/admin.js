@@ -14,28 +14,6 @@ var User = mongoose.model("User", Schema.userSchema);
 var Cart = mongoose.model("Cart", Schema.cartSchema);
 var Inventory = mongoose.model("Inventory", Schema.inventorySchema);
 
-//initialize s3 interface
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWSID,
-  secretAccessKey: process.env.AWSKEY,
-});
-
-//function for uploading file to s3 bucket
-const uploadFileToS3 = (filesArr, photoURIS) => {
-  filesArr.forEach((file) => {
-    const params = {
-      Bucket: process.env.BUCKET,
-      Key: `${file.name}`,
-      Body: file.arrayBuffer,
-    };
-    s3.upload(params, (err, data) => {
-      if (err) throw err;
-
-      return photoURIS.push(data);
-    });
-  });
-};
-
 //fetches all USERS
 app.get("/db", config.adminAuth, (req, res) => {
   User.find().exec((err, users) => {
@@ -59,15 +37,13 @@ app.post("/addItem", config.adminAuth, (req, res) => {
     colors,
   } = req.body;
 
-  const imageUrls = [];
-  const colorsFormatted = colors.map((color) => ({ color: color }));
-
-  uploadFileToS3(images, imageUrls);
+  let colorsFormatted = colors.map((color) => ({ color: color }));
+  if (images.length === 0) return res.status(400).send(images);
 
   var inventory = new Inventory({
     name: name,
     price: price,
-    images: imageUrls,
+    images: images,
     description: description,
     vendor: vendor,
     quantity: quantity,
