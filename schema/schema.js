@@ -19,6 +19,7 @@ var inventorySchema = new Schema({
   colors: [new Schema({ color: String })],
   sizes: [itemSize],
   vendor: String,
+  gender: String,
 });
 
 var userSchema = new Schema(
