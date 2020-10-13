@@ -30,6 +30,7 @@ var userSchema = new Schema(
     password: String,
     address: String,
     location: String,
+    city: String,
     orders: Array,
     cart: Array,
     favorites: Array,

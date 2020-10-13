@@ -50,22 +50,22 @@ app.get("/user", config.isAuthorized, function (req, res, next) {
   });
 });
 
-//fix this
-app.post("/addtocart", config.isAuthorized, (req, res, next) => {
-  let currentCart = [];
-  if (!req.body.item) return res.status(400).send("bad request");
+//can add/delete items from cart. Entire cart is sent and replaced with every request.
+app.post("/updatecart", config.isAuthorized, (req, res, next) => {
+  if (!req.body.items) return res.status(400).send("bad request");
 
-  User.findById(req.userId, (err, user) =>
-    err ? console.log(err) : currentCart.push(user.cart)
-  );
+  // User.findById(req.userId, (err, user) =>
+  //   err ? console.log(err) : currentCart.push(user.cart)
+  // );
 
   User.findByIdAndUpdate(
     req.userId,
-    { cart: [...currentCart, req.body.item] },
+    { cart: req.body.items },
     { new: true },
     function (err, user) {
       if (err) return res.status(500).send("There was a problem finding you.");
       if (!user) return res.status(404).send("no users found");
+      console.log(user.cart.length);
       res.status(200).send(user.cart);
     }
   );
