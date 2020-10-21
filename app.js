@@ -27,7 +27,7 @@ db.on("error", console.error.bind(console, "mongo connection error"));
 
 app.use("/api/auth", authController); //register user
 app.use("/api/admin", adminController); // /login
-app.use("/api", userHandler); // /addtocart && /store && /updateaccount
+app.use("/api", userHandler); // /addtocart && /store && /updateaccount && checkout
 
 app.use("/admin", adminAPI);
 

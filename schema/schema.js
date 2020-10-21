@@ -42,6 +42,7 @@ var userSchema = new Schema(
 
 var orderSchema = new Schema({
   address: String,
+  country: String,
   shipped: Boolean,
   name: String,
   details: String,
@@ -49,6 +50,9 @@ var orderSchema = new Schema({
   vendor: String,
   email: String,
   fulfilled: Boolean,
+  paid: Boolean,
+  returned: Boolean,
+  amount: Number,
 });
 
 var adminSchema = new Schema({

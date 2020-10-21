@@ -11,7 +11,7 @@ WORKDIR /usr/src/app
 # Install Dependencies
 COPY package*.json ./
 
-RUN npm ci && npm i -g nodemon
+RUN npm install && npm install -g nodemon
 
 # Copy app source code
 COPY . .
@@ -19,4 +19,4 @@ COPY . .
 # Exports
 EXPOSE 4545
 # change from dev to start in production build
-CMD ["npm","dev"]
+CMD ["npm","start"]

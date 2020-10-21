@@ -1,14 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
+require("dotenv").config();
 const Schema = require("../schema/schema");
+const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 var bodyParser = require("body-parser");
 var Inventory = mongoose.model("Inventory", Schema.inventorySchema);
 const app = express.Router();
 var User = mongoose.model("User", Schema.userSchema);
 var bcrypt = require("bcryptjs");
-
 var config = require("../auth/authentication");
-
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -65,7 +65,6 @@ app.post("/updatecart", config.isAuthorized, (req, res, next) => {
     function (err, user) {
       if (err) return res.status(500).send("There was a problem finding you.");
       if (!user) return res.status(404).send("no users found");
-      console.log(user.cart.length);
       res.status(200).send(user.cart);
     }
   );
@@ -117,6 +116,51 @@ app.post("/updateaccount", config.isAuthorized, (req, res, next) => {
   if (canEdit && canEdit !== "password") {
     updatesAccount(req.body.target, req.body.update, req.userId);
   }
+});
+
+app.post("/checkout-session", async (req, res) => {
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    customer_email: "mccaskey316@gmail.com",
+    billing_address_collection: "required",
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: "T-shirt",
+          },
+          unit_amount: 2000,
+        },
+        quantity: 5,
+      },
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: "T-shirt 2",
+          },
+          unit_amount: 2000,
+        },
+        quantity: 44,
+      },
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: "shipping",
+          },
+          unit_amount: 200,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: "payment",
+    success_url: "http://localhost:3000/paymentsuccess",
+    cancel_url: "http://localhost:3000/checkout",
+  });
+
+  res.json({ id: session.id });
 });
 
 module.exports = app;
