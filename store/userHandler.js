@@ -118,49 +118,4 @@ app.post("/updateaccount", config.isAuthorized, (req, res, next) => {
   }
 });
 
-app.post("/checkout-session", async (req, res) => {
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    customer_email: "mccaskey316@gmail.com",
-    billing_address_collection: "required",
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "T-shirt",
-          },
-          unit_amount: 2000,
-        },
-        quantity: 5,
-      },
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "T-shirt 2",
-          },
-          unit_amount: 2000,
-        },
-        quantity: 44,
-      },
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "shipping",
-          },
-          unit_amount: 200,
-        },
-        quantity: 1,
-      },
-    ],
-    mode: "payment",
-    success_url: "http://localhost:3000/paymentsuccess",
-    cancel_url: "http://localhost:3000/checkout",
-  });
-
-  res.json({ id: session.id });
-});
-
 module.exports = app;

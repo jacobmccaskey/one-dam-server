@@ -41,18 +41,22 @@ var userSchema = new Schema(
 );
 
 var orderSchema = new Schema({
+  stripeSessionId: String,
   address: String,
   country: String,
   shipped: Boolean,
   name: String,
   details: String,
   items: Array,
+  totalItems: Number,
   vendor: String,
   email: String,
   fulfilled: Boolean,
   paid: Boolean,
   returned: Boolean,
   amount: Number,
+  user_id: String,
+  guestCheckout: Boolean,
 });
 
 var adminSchema = new Schema({
