@@ -38,14 +38,20 @@ app.get("/user", config.isAuthorized, function (req, res, next) {
         .send("There was a problem finding you.", { auth: false });
     if (!user) return res.status(404).send("no users found", { auth: false });
     res.status(200).send({
-      cart: user.cart,
-      favorites: user.favorites,
-      address: user.address,
-      email: user.email,
+      status: 200,
+      auth: true,
       firstName: user.firstName,
       lastName: user.lastName,
-      auth: true,
-      status: 200,
+      cart: user.cart,
+      address: user.address,
+      addressTwo: user.addressTwo,
+      email: user.email,
+      phone: user.phone,
+      favorites: user.favorites,
+      county: user.county,
+      city: user.city,
+      postalCode: user.postalCode,
+      orders: user.orders,
     });
   });
 });
@@ -72,50 +78,33 @@ app.post("/updatecart", config.isAuthorized, (req, res, next) => {
 
 //to modify any editable area of user Schema, requires x-access-token header with body.target, body.update
 app.post("/updateaccount", config.isAuthorized, (req, res, next) => {
-  function updatesAccount(target, update, id) {
-    if (!update) return res.status(400).send("no data to update");
+  function updatesAccount(update, id) {
+    if (!update || typeof target !== Object)
+      return res.status(400).send("no data to update");
 
-    User.findByIdAndUpdate(
-      id,
-      { [target]: update },
-      { new: true },
-      (err, user) => {
-        if (err)
-          return res.status(500).send("There was a problem finding you.");
-        if (!user) return res.status(404).send("no users found");
-        res.status(200).send(`${target}: ${update}`);
-      }
-    );
+    User.findByIdAndUpdate(id, update, { new: true }, (err, user) => {
+      if (err) return res.status(404).send("There was a problem finding you.");
+      if (!user) return res.status(404).send("no users found");
+      res.status(200).send({
+        status: 200,
+        auth: true,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        cart: user.cart,
+        address: user.address,
+        addressTwo: user.addressTwo,
+        email: user.email,
+        phone: user.phone,
+        favorites: user.favorites,
+        county: user.county,
+        city: user.city,
+        postalCode: user.postalCode,
+        orders: user.orders,
+      });
+    });
   }
 
-  const editable = [
-    "password",
-    "firstName",
-    "lastName",
-    "address",
-    "email",
-    "cart",
-  ];
-  let canEdit = editable.find((value) => value === req.body.target);
-
-  if (!canEdit) return res.status(400).send("no matching fields");
-  if (canEdit === "password") {
-    var hashedPassword = bcrypt.hashSync(req.body.update, 8);
-    User.findByIdAndUpdate(
-      req.userId,
-      { password: hashedPassword },
-      { new: true },
-      (err, user) => {
-        if (err)
-          return res.status(500).send("There was a problem finding you.");
-        if (!user) return res.status(404).send("no users found");
-        res.status(200).send("password updated, keep it safe!");
-      }
-    );
-  }
-  if (canEdit && canEdit !== "password") {
-    updatesAccount(req.body.target, req.body.update, req.userId);
-  }
+  updatesAccount(req.body.id, req.body.update);
 });
 
 module.exports = app;

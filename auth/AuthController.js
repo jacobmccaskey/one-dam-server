@@ -32,14 +32,21 @@ router.post("/register", (req, res) => {
         //24 hours
       });
       res.status(200).send({
+        status: 200,
         auth: true,
         token: token,
         firstName: user.firstName,
         lastName: user.lastName,
-        address: user.address,
         cart: user.cart,
+        address: user.address,
+        addressTwo: user.addressTwo,
+        email: user.email,
+        phone: user.phone,
         favorites: user.favorites,
-        status: 200,
+        county: user.county,
+        city: user.city,
+        postalCode: user.postalCode,
+        orders: user.orders,
       });
     }
   );
@@ -63,8 +70,14 @@ router.post("/login", (req, res) => {
       lastName: user.lastName,
       cart: user.cart,
       address: user.address,
+      addressTwo: user.addressTwo,
       email: user.email,
+      phone: user.phone,
       favorites: user.favorites,
+      county: user.county,
+      city: user.city,
+      postalCode: user.postalCode,
+      orders: user.orders,
     });
   });
 });
