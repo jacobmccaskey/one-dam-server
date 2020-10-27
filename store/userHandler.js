@@ -57,13 +57,35 @@ app.get("/user", config.isAuthorized, function (req, res, next) {
   });
 });
 
+app.post("/updatefavorites", config.isAuthorized, (req, res, next) => {
+  if (!req.body.items) return res.status(400).send("nothing to add here buddy");
+  User.findByIdAndUpdate(
+    req.userId,
+    { favorites: req.body.items },
+    { new: true },
+    function (err, user) {
+      if (err) {
+        return res
+          .status(500)
+          .send(
+            "Shucks. There was an issue on our end. Please contact support if this keeps happening."
+          );
+      }
+      if (!user) {
+        return res
+          .status(404)
+          .send(
+            "There was a problem finding your account, are you sure you are logged in?"
+          );
+      }
+      res.status(200).send(user.favorites);
+    }
+  );
+});
+
 //can add/delete items from cart. Entire cart is sent and replaced with every request.
 app.post("/updatecart", config.isAuthorized, (req, res, next) => {
   if (!req.body.items) return res.status(400).send("bad request");
-
-  // User.findById(req.userId, (err, user) =>
-  //   err ? console.log(err) : currentCart.push(user.cart)
-  // );
 
   User.findByIdAndUpdate(
     req.userId,
