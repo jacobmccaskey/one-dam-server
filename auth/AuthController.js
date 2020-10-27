@@ -76,6 +76,7 @@ router.post("/login", (req, res) => {
       favorites: user.favorites,
       county: user.county,
       city: user.city,
+      state: user.state,
       postalCode: user.postalCode,
       orders: user.orders,
     });

@@ -35,6 +35,7 @@ var userSchema = new Schema(
     postalCode: String,
     location: String,
     city: String,
+    state: String,
     orders: Array,
     cart: Array,
     favorites: Array,

@@ -50,6 +50,7 @@ app.get("/user", config.isAuthorized, function (req, res, next) {
       favorites: user.favorites,
       county: user.county,
       city: user.city,
+      state: user.state,
       postalCode: user.postalCode,
       orders: user.orders,
     });
@@ -79,8 +80,10 @@ app.post("/updatecart", config.isAuthorized, (req, res, next) => {
 //to modify any editable area of user Schema, requires x-access-token header with body.target, body.update
 app.post("/updateaccount", config.isAuthorized, (req, res, next) => {
   function updatesAccount(update, id) {
-    if (!update || typeof target !== Object)
+    if (!update) {
+      console.log(update);
       return res.status(400).send("no data to update");
+    }
 
     User.findByIdAndUpdate(id, update, { new: true }, (err, user) => {
       if (err) return res.status(404).send("There was a problem finding you.");
@@ -98,13 +101,14 @@ app.post("/updateaccount", config.isAuthorized, (req, res, next) => {
         favorites: user.favorites,
         county: user.county,
         city: user.city,
+        state: user.state,
         postalCode: user.postalCode,
         orders: user.orders,
       });
     });
   }
 
-  updatesAccount(req.body.id, req.body.update);
+  updatesAccount(req.body.update, req.userId);
 });
 
 module.exports = app;
