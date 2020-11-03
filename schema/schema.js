@@ -4,8 +4,8 @@ var Schema = mongoose.Schema;
 
 var itemSize = new Schema({
   size: String,
-  gender: String,
   quantity: Number,
+  color: String,
 });
 
 var inventorySchema = new Schema({
@@ -20,6 +20,7 @@ var inventorySchema = new Schema({
   sizes: [itemSize],
   vendor: String,
   gender: String,
+  totalOrders: Number,
 });
 
 var userSchema = new Schema(
@@ -45,9 +46,21 @@ var userSchema = new Schema(
   { collection: "Users" }
 );
 
+var messageSupportSchema = new Schema({
+  userId: String,
+  userEmail: String,
+  user: Object,
+  time: String,
+  read: Boolean,
+});
+
 var orderSchema = new Schema({
   stripeSessionId: String,
   address: String,
+  addressTwo: String,
+  county: String,
+  postalCode: String,
+  city: String,
   country: String,
   shipped: Boolean,
   name: String,
@@ -62,6 +75,7 @@ var orderSchema = new Schema({
   amount: Number,
   user_id: String,
   guestCheckout: Boolean,
+  guestId: String,
 });
 
 var adminSchema = new Schema({

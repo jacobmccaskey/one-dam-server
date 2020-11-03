@@ -7,6 +7,7 @@ router.use(bodyParser.json());
 //import user
 var Schema = require("../schema/schema");
 var Admin = mongoose.model("Admin", Schema.adminSchema);
+
 var validator = require("validator");
 
 var jwt = require("jsonwebtoken");
@@ -68,6 +69,10 @@ router.post("/login", (req, res) => {
     res.status(200).send({ admin: true, token: token });
   });
 });
+
+// router.post("/support", (req, res) => {
+
+// });
 
 router.get("/logout", (req, res) => {
   res.status(200).send({ admin: false, token: null });

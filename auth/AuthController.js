@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 var bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require("uuid");
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 //import user
@@ -47,6 +48,8 @@ router.post("/register", (req, res) => {
         city: user.city,
         postalCode: user.postalCode,
         orders: user.orders,
+        guest_bool: false,
+        guestId: null,
       });
     }
   );
@@ -58,7 +61,13 @@ router.post("/login", (req, res) => {
     if (!user) return res.status(404).send({ status: 404 });
     let validatePassword = bcrypt.compareSync(req.body.password, user.password);
     if (!validatePassword)
-      return res.status(401).send({ auth: false, token: null, status: 401 });
+      return res.status(401).send({
+        auth: false,
+        token: null,
+        status: 401,
+        guest_bool: true,
+        guestId: uuidv4(),
+      });
     var token = jwt.sign({ id: user._id }, config.privateKey, {
       expiresIn: 86400,
     });
@@ -79,12 +88,16 @@ router.post("/login", (req, res) => {
       state: user.state,
       postalCode: user.postalCode,
       orders: user.orders,
+      guest_bool: false,
+      guestId: null,
     });
   });
 });
 
 router.get("/logout", (req, res) => {
-  res.status(200).send({ auth: false, token: null });
+  res
+    .status(200)
+    .send({ auth: false, token: null, guest_bool: true, guestId: uuidv4() });
 });
 
 module.exports = router;

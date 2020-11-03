@@ -6,126 +6,188 @@ const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 var bodyParser = require("body-parser");
 const app = express.Router();
 const Order = mongoose.model("Order", Schema.orderSchema);
+const User = mongoose.model("User", Schema.userSchema);
+const Inventory = mongoose.model("Inventory", Schema.inventorySchema);
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
 
-const endpointSecret = "whsec_3kJ5moLcSWK6ir7QHvWJRngfbcYRH4x0";
+//begins bodyParser.json()
+app.use(bodyParser.json());
 
-const fulfillOrder = (session) => {
-  // TODO: fill me in
-  console.log("Fulfilling order", session);
-};
+const privateKey = fs.readFileSync("./private.pem", "utf-8");
 
-const formatLineItemsForCheckout = (arrayofItems) => {
-  //does some stuff to format stripe checkout object
-};
+const formatLineItemsForCheckoutAndUpdateInventory = async (arrayOfItems) => {
+  let lineItems = [
+    {
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: "flat rate shipping",
+        },
+        unit_amount: 200,
+      },
+      quantity: 1,
+    },
+  ];
+  for (const item of arrayOfItems) {
+    let newInventoryCount;
+    let totalOrdersUpdate;
+    const count = item.count;
+    const color = item.color;
+    const size = item.size;
+    //loops thru each item in cart for accurate pricing and all that cool stuff
+    await Inventory.findById(item.id, function (err, itemDetails) {
+      if (err) {
+        return console.log(err);
+      }
+      newInventoryCount = itemDetails.quantity - 1;
+      if (itemDetails.totalOrders === NaN) totalOrdersUpdate = 1;
+      if (itemDetails.totalOrders !== NaN) {
+        totalOrdersUpdate = itemDetails.totalOrders + 1;
+      }
+      const name = itemDetails.name;
 
-app.post(
-  "/webhook",
-  bodyParser.raw({ type: "application/json" }),
-  (request, response) => {
-    const payload = request.body;
-    const sig = request.headers["stripe-signature"];
+      //formats price for stripe line-item data by removing decimal point. stripe checkout
+      // does not accept decimals.
+      const price = Number.parseFloat(itemDetails.price).toFixed(2);
+      const priceFormattedForStripe = Number(price.split(".").join(""));
 
-    let event;
-
-    try {
-      event = stripe.webhooks.constructEvent(payload, sig, endpointSecret);
-    } catch (err) {
-      response.status(400).send(`Webhook Error: ${err.message}`);
-      console.log(err.message);
-    }
-
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-
-      // Fulfill the purchase...
-      fulfillOrder(session);
-    }
-
-    response.status(200);
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `${name} | ${color} | ${size}`,
+          },
+          unit_amount: priceFormattedForStripe,
+        },
+        quantity: Number(count),
+      });
+    });
+    // updated inventory with total orders and inventory count
+    Inventory.findByIdAndUpdate(
+      item.id,
+      { quantity: newInventoryCount, totalOrders: totalOrdersUpdate },
+      { new: true },
+      function (err, item) {
+        if (err) return err;
+      }
+    );
   }
-);
+  // console.log(JSON.stringify(lineItems));
+  return lineItems;
+};
 
 app.post("/checkout-session", async (req, res) => {
   const {
     order,
-    user_id,
-    name,
-    address,
-    country,
-    postalcode,
-    totalitems,
-    totalprice,
+    user_token,
     guest_bool,
+    guestId,
+    country,
+    totalItems,
+    name,
+    email,
+    shipping,
   } = req.body;
+  //binds id to variable for use in initial order to database
+  let userId;
+  //finds userID
+  if (user_token) {
+    jwt.verify(user_token, privateKey, (err, decoded) => {
+      if (err) return err;
+      userId = decoded.id;
+    });
+  }
+
+  const lineItems = await formatLineItemsForCheckoutAndUpdateInventory(
+    req.body.order
+  );
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
-    customer_email: "mccaskey316@gmail.com",
+    customer_email: email,
     billing_address_collection: "required",
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "T-shirt",
-          },
-          unit_amount: 2000,
-        },
-        quantity: 5,
-      },
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "T-shirt 2",
-          },
-          unit_amount: 2000,
-        },
-        quantity: 44,
-      },
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "shipping",
-          },
-          unit_amount: 200,
-        },
-        quantity: 1,
-      },
-    ],
+    line_items: lineItems,
     mode: "payment",
-    success_url: `http://localhost:3000/paymentsuccess/${session.id}`,
-    cancel_url: "http://localhost:3000/checkout",
+    success_url: process.env.stripeSuccessUrl,
+    cancel_url: process.env.stripeCancelUrl,
   });
 
-  Order.create(
-    {
+  const orderSummaryForUserObject = {
+    id: session.id,
+    order: lineItems,
+    time: new Date(),
+    paid: false,
+  };
+
+  if (userId) {
+    let updatedOrders = [];
+    await User.findById(userId, function (err, user) {
+      if (err) return err;
+      if (user.orders) {
+        pastOrders = user.orders;
+      }
+    });
+    updatedOrders.push(orderSummaryForUserObject);
+    await User.findByIdAndUpdate(
+      userId,
+      { orders: updatedOrders },
+      (err, doc) => {
+        if (err) return err;
+      }
+    );
+  }
+
+  if (userId) {
+    await Order.create({
       stripeSessionId: session.id,
-      name: name,
-      user_id: user_id,
-      address: address,
-      country: country,
-      postalCode: postalcode,
+      address: shipping.address,
+      addressTwo: shipping.addressTwo,
+      county: shipping.county,
+      postalCode: shipping.postalCode,
+      city: shipping.city,
+      country: shipping.country,
       shipped: false,
+      name: name,
       details: "",
       items: order,
+      totalItems: Number(totalItems),
+      vendor: "oneDAM",
+      email: email,
       fulfilled: false,
       paid: false,
       returned: false,
-      vendor: false,
-      amount: parseFloat(totalprice),
-      totalItems: parseInt(totalitems),
-      guestCheckout: guest_bool,
-    },
-    function (err, order) {
-      // console.log(order)
-      if (err)
-        return res
-          .status(400)
-          .send("There was a problem with our server. Please try again.");
-    }
-  );
+      amount: 0,
+      user_id: userId,
+      guestCheckout: false,
+      guestId: "0000",
+    });
+  }
+  if (guest_bool === true) {
+    await Order.create({
+      stripeSessionId: session.id,
+      address: shipping.address,
+      addressTwo: shipping.addressTwo,
+      county: shipping.county,
+      postalCode: shipping.postalCode,
+      city: shipping.city,
+      country: country,
+      shipped: false,
+      name: name,
+      details: "",
+      items: order,
+      totalItems: Number(totalItems),
+      vendor: "oneDAM",
+      email: email,
+      fulfilled: false,
+      paid: false,
+      returned: false,
+      amount: 0,
+      user_id: "guest",
+      guestCheckout: true,
+      guestId: guestId,
+    });
+  }
 
   res.json({ id: session.id });
 });

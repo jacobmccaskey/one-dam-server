@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require("uuid");
 require("dotenv").config();
 const Schema = require("../schema/schema");
 const stripe = require("stripe")(process.env.STRIPE_API_KEY);
@@ -35,8 +36,19 @@ app.get("/user", config.isAuthorized, function (req, res, next) {
     if (err)
       return res
         .status(500)
-        .send("There was a problem finding you.", { auth: false });
-    if (!user) return res.status(404).send("no users found", { auth: false });
+        .send("There was a problem finding you.", {
+          auth: false,
+          guest_bool: true,
+          guestId: uuidv4(),
+        });
+    if (!user)
+      return res
+        .status(404)
+        .send("no users found", {
+          auth: false,
+          guest_bool: true,
+          guestId: uuidv4(),
+        });
     res.status(200).send({
       status: 200,
       auth: true,
@@ -53,6 +65,8 @@ app.get("/user", config.isAuthorized, function (req, res, next) {
       state: user.state,
       postalCode: user.postalCode,
       orders: user.orders,
+      guest_bool: false,
+      guestId: null,
     });
   });
 });

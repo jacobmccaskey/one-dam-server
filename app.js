@@ -1,19 +1,18 @@
 const express = require("express");
 require("dotenv").config();
-const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require("helmet");
 const authController = require("./auth/AuthController");
 const adminAPI = require("./admin/admin");
 const adminController = require("./auth/adminController");
 const userHandler = require("./store/userHandler");
-const orderWebhook = require("./store/orders");
+const orderHandler = require("./store/orders");
+const stripeHandler = require("./store/stripe");
 
 const mongoose = require("mongoose");
 var app = express();
 app.use(helmet());
 app.use(cors());
-// app.use(bodyParser.json());
 var PORT = 4545;
 //127.0.0.1    `mongodb://127.0.0.1/test`
 const { MONGO_HOSTNAME, MONGO_DB, MONGO_PORT } = process.env;
@@ -29,8 +28,9 @@ db.on("error", console.error.bind(console, "mongo connection error"));
 app.use("/api/auth", authController); //register user
 app.use("/api/admin", adminController); // /login
 app.use("/api", userHandler); // /addtocart && /store && /updateaccount && checkout
-app.use("/orders", orderWebhook); //listens for payment events from Stripe
+app.use("/orders", orderHandler); //listens for payment events from Stripe
 app.use("/admin", adminAPI);
+app.use("/stripe/", stripeHandler);
 
 app.listen(PORT, () => {
   console.log("server is live");

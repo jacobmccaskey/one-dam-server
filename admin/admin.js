@@ -34,6 +34,7 @@ app.post("/addItem", config.adminAuth, (req, res) => {
     quantity,
     sizes,
     colors,
+    gender,
   } = req.body;
 
   let colorsFormatted = colors.map((color) => ({ color: color }));
@@ -48,6 +49,7 @@ app.post("/addItem", config.adminAuth, (req, res) => {
     quantity: quantity,
     sizes: sizes,
     colors: colorsFormatted,
+    gender: gender,
   });
   inventory.save(function (err) {
     if (err)
