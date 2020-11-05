@@ -7,6 +7,8 @@ const User = mongoose.model("User", Schema.userSchema);
 const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 var bodyParser = require("body-parser");
 const app = express.Router();
+//use to get rid of deprecation warnings for findOneAndUpdate..
+mongoose.set("useFindAndModify", false);
 
 const endpointSecret = process.env.endpointSecretStripe;
 
@@ -18,18 +20,19 @@ function fulfillOrder(session) {
   const update = { paid: true, amount: confirmedPaidPrice };
   Order.findOneAndUpdate(filter, update, { new: true }, (err, doc) => {
     if (err) return err;
-    console.log(doc);
+    // console.log(doc);
   });
-  let ordersArray;
-  User.findOne({ email: customerEmail }, (err, user) => {
-    if (err) return err;
-    ordersArray = user.orders;
-  });
-  for (const order of ordersArray) {
-    if (order.id === session.id) {
-      return (order.paid = true);
+
+  User.updateOne(
+    { email: customerEmail, "orders.id": `${session.id}` },
+    { $set: { "orders.$.paid": true } },
+    (err, doc) => {
+      if (err) return err;
     }
-  }
+  );
+  User.findOneAndUpdate({ email: customerEmail }, { cart: [] }, (err, user) => {
+    if (err) return err;
+  });
 }
 
 app.post(

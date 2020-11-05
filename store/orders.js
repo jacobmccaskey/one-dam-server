@@ -125,7 +125,7 @@ app.post("/checkout-session", async (req, res) => {
     await User.findById(userId, function (err, user) {
       if (err) return err;
       if (user.orders) {
-        pastOrders = user.orders;
+        updatedOrders = user.orders;
       }
     });
     updatedOrders.push(orderSummaryForUserObject);
