@@ -34,7 +34,7 @@ function fulfillOrder(session) {
     if (err) return err;
   });
 }
-
+//this is a web hook that listens for payment intent complete events
 app.post(
   "/paymentRecievedHook",
   bodyParser.raw({ type: "application/json" }),

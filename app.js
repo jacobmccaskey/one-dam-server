@@ -27,10 +27,10 @@ db.on("error", console.error.bind(console, "mongo connection error"));
 
 app.use("/api/auth", authController); //register user
 app.use("/api/admin", adminController); // /login
-app.use("/api", userHandler); // /addtocart && /store && /updateaccount && checkout
+app.use("/api", userHandler); // /addtocart && /store && /updateaccount
 app.use("/orders", orderHandler); //listens for payment events from Stripe
 app.use("/admin", adminAPI);
-app.use("/stripe/", stripeHandler);
+app.use("/stripe/", stripeHandler); //order payment & fulfillment
 
 app.listen(PORT, () => {
   console.log("server is live");

@@ -29,6 +29,7 @@ const formatLineItemsForCheckoutAndUpdateInventory = async (arrayOfItems) => {
       quantity: 1,
     },
   ];
+  let totalToCalcTax = 0;
   for (const item of arrayOfItems) {
     let newInventoryCount;
     let totalOrdersUpdate;
@@ -51,6 +52,8 @@ const formatLineItemsForCheckoutAndUpdateInventory = async (arrayOfItems) => {
       // does not accept decimals.
       const price = Number.parseFloat(itemDetails.price).toFixed(2);
       const priceFormattedForStripe = Number(price.split(".").join(""));
+      //pushes to total price for formatted line item for taxes at 6%
+      totalToCalcTax += priceFormattedForStripe * count;
 
       lineItems.push({
         price_data: {
@@ -73,6 +76,16 @@ const formatLineItemsForCheckoutAndUpdateInventory = async (arrayOfItems) => {
       }
     );
   }
+  //last item to push. calculates tax
+  const tax = totalToCalcTax * 0.06;
+  lineItems.push({
+    price_data: {
+      currency: "usd",
+      product_data: { name: "tax" },
+      unit_amount: Number(tax),
+    },
+    quantity: 1,
+  });
   // console.log(JSON.stringify(lineItems));
   return lineItems;
 };
