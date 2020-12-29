@@ -6,7 +6,7 @@ const authController = require("./auth/AuthController");
 const adminAPI = require("./admin/admin");
 const adminController = require("./auth/adminController");
 const userHandler = require("./store/userHandler");
-const orderHandler = require("./store/orders");
+const orderHandler = require("./store/checkout");
 const stripeHandler = require("./store/stripe");
 
 const mongoose = require("mongoose");

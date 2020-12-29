@@ -24,7 +24,7 @@ const formatLineItemsForCheckoutAndUpdateInventory = async (arrayOfItems) => {
         product_data: {
           name: "flat rate shipping",
         },
-        unit_amount: 200,
+        unit_amount: 700,
       },
       quantity: 1,
     },

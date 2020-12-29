@@ -2,10 +2,14 @@ const mongoose = require("mongoose");
 
 var Schema = mongoose.Schema;
 
-var itemSize = new Schema({
+var sizeVariant = new Schema({
   size: String,
-  quantity: Number,
-  color: String,
+  variant: [
+    new Schema({
+      color: String,
+      quantity: Number,
+    }),
+  ],
 });
 
 var inventorySchema = new Schema({
@@ -16,11 +20,13 @@ var inventorySchema = new Schema({
   description: String,
   quantity: Number,
   orders: Number,
+  returns: Number,
   colors: [new Schema({ color: String })],
-  sizes: [itemSize],
+  sizes: [sizeVariant],
   vendor: String,
   gender: String,
   totalOrders: Number,
+  tags: Array,
 });
 
 var userSchema = new Schema(
@@ -96,11 +102,20 @@ var cartSchema = new Schema({
   items: [],
 });
 
+var imageSchema = new Schema({
+  img: {
+    data: Buffer,
+    contentType: String,
+  },
+});
+
 module.exports = {
   cartSchema,
   userSchema,
   inventorySchema,
   adminSchema,
   orderSchema,
-  itemSize,
+  sizeVariant,
+  messageSupportSchema,
+  imageSchema,
 };
