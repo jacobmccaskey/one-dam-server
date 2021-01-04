@@ -10,11 +10,15 @@ const User = mongoose.model("User", Schema.userSchema);
 const Inventory = mongoose.model("Inventory", Schema.inventorySchema);
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
 
 //begins bodyParser.json()
 app.use(bodyParser.json());
 
 const privateKey = fs.readFileSync("./private.pem", "utf-8");
+
+const currentShippingCostStripe = 700;
+const currentShippingCost = 7.0;
 
 const formatLineItemsForCheckoutAndUpdateInventory = async (arrayOfItems) => {
   let lineItems = [
@@ -24,7 +28,7 @@ const formatLineItemsForCheckoutAndUpdateInventory = async (arrayOfItems) => {
         product_data: {
           name: "flat rate shipping",
         },
-        unit_amount: 700,
+        unit_amount: currentShippingCostStripe,
       },
       quantity: 1,
     },
@@ -95,12 +99,13 @@ app.post("/checkout-session", async (req, res) => {
     order,
     user_token,
     guest_bool,
-    guestId,
     country,
     totalItems,
     name,
     email,
     shipping,
+    phone,
+    amount,
   } = req.body;
   //binds id to variable for use in initial order to database
   let userId;
@@ -112,9 +117,7 @@ app.post("/checkout-session", async (req, res) => {
     });
   }
 
-  const lineItems = await formatLineItemsForCheckoutAndUpdateInventory(
-    req.body.order
-  );
+  const lineItems = await formatLineItemsForCheckoutAndUpdateInventory(order);
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -126,15 +129,19 @@ app.post("/checkout-session", async (req, res) => {
     cancel_url: process.env.stripeCancelUrl,
   });
 
-  const orderSummaryForUserObject = {
-    id: session.id,
-    order: lineItems,
-    time: new Date(),
-    paid: false,
-  };
-
-  if (userId) {
+  //updates orders of User Account
+  if (user_token !== null || guest_bool !== true) {
     let updatedOrders = [];
+
+    const orderTotal = Number(amount) + Number(currentShippingCost);
+
+    const orderSummaryForUserObject = {
+      id: session.id,
+      order: lineItems,
+      time: new Date(),
+      paid: false,
+      amount: orderTotal.toFixed(2),
+    };
     await User.findById(userId, function (err, user) {
       if (err) return err;
       if (user.orders) {
@@ -150,7 +157,7 @@ app.post("/checkout-session", async (req, res) => {
       }
     );
   }
-
+  //creates order for registered account
   if (userId) {
     await Order.create({
       stripeSessionId: session.id,
@@ -159,14 +166,17 @@ app.post("/checkout-session", async (req, res) => {
       county: shipping.county,
       postalCode: shipping.postalCode,
       city: shipping.city,
+      state: shipping.state,
       country: shipping.country,
       shipped: false,
       name: name,
       details: "",
-      items: order,
+      items: lineItems,
       totalItems: Number(totalItems),
       vendor: "oneDAM",
       email: email,
+      phone: phone,
+      time: new Date().toString(),
       fulfilled: false,
       paid: false,
       returned: false,
@@ -176,6 +186,8 @@ app.post("/checkout-session", async (req, res) => {
       guestId: "0000",
     });
   }
+
+  //creates order for guest account
   if (guest_bool === true) {
     await Order.create({
       stripeSessionId: session.id,
@@ -188,7 +200,8 @@ app.post("/checkout-session", async (req, res) => {
       shipped: false,
       name: name,
       details: "",
-      items: order,
+      items: lineItems,
+      time: new Date().toString(),
       totalItems: Number(totalItems),
       vendor: "oneDAM",
       email: email,
@@ -196,9 +209,9 @@ app.post("/checkout-session", async (req, res) => {
       paid: false,
       returned: false,
       amount: 0,
-      user_id: "guest",
+      user_id: "guest" + `${uuidv4()}`,
       guestCheckout: true,
-      guestId: guestId,
+      guestId: uuidv4(),
     });
   }
 

@@ -165,8 +165,20 @@ app.get("/orders", config.adminAuth, (req, res) => {
   });
 });
 
-app.put("/orders/fulfill/:ID", config.adminAuth, (req, res) => {
+app.delete("/deleteOrder", config.adminAuth, (req, res) => {
+  Order.findByIdAndDelete(req.body.id, (err, doc) => {
+    if (err) return err;
+    return res.send(doc);
+  });
+});
+
+app.put("/updateOrder", config.adminAuth, (req, res) => {
+  const { update } = req.body;
   if (req.params.ID === null) return res.status(404);
+  Order.findByIdAndUpdate(req.body.id, update, (err, item) => {
+    if (err) return err;
+    res.sendStatus(200);
+  });
 });
 
 //display store items
