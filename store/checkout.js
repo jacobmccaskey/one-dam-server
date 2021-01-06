@@ -81,7 +81,7 @@ const formatLineItemsForCheckoutAndUpdateInventory = async (arrayOfItems) => {
     );
   }
   //last item to push. calculates tax
-  const tax = totalToCalcTax * 0.06;
+  const tax = Math.ceil(totalToCalcTax * 0.06);
   lineItems.push({
     price_data: {
       currency: "usd",
@@ -91,6 +91,7 @@ const formatLineItemsForCheckoutAndUpdateInventory = async (arrayOfItems) => {
     quantity: 1,
   });
   // console.log(JSON.stringify(lineItems));
+  console.log(lineItems);
   return lineItems;
 };
 
@@ -107,6 +108,9 @@ app.post("/checkout-session", async (req, res) => {
     phone,
     amount,
   } = req.body;
+
+  const orderTotal = Number(amount) + Number(currentShippingCost);
+
   //binds id to variable for use in initial order to database
   let userId;
   //finds userID
@@ -133,8 +137,6 @@ app.post("/checkout-session", async (req, res) => {
   if (user_token !== null || guest_bool !== true) {
     let updatedOrders = [];
 
-    const orderTotal = Number(amount) + Number(currentShippingCost);
-
     const orderSummaryForUserObject = {
       id: session.id,
       order: lineItems,
@@ -158,7 +160,7 @@ app.post("/checkout-session", async (req, res) => {
     );
   }
   //creates order for registered account
-  if (userId) {
+  if (userId && guest_bool !== true) {
     await Order.create({
       stripeSessionId: session.id,
       address: shipping.address,
@@ -176,11 +178,11 @@ app.post("/checkout-session", async (req, res) => {
       vendor: "oneDAM",
       email: email,
       phone: phone,
-      time: new Date().toString(),
+      timeOfOrder: new Date().toString(),
       fulfilled: false,
       paid: false,
       returned: false,
-      amount: 0,
+      amount: orderTotal,
       user_id: userId,
       guestCheckout: false,
       guestId: "0000",
@@ -201,14 +203,14 @@ app.post("/checkout-session", async (req, res) => {
       name: name,
       details: "",
       items: lineItems,
-      time: new Date().toString(),
+      timeOfOrder: new Date().toString(),
       totalItems: Number(totalItems),
       vendor: "oneDAM",
       email: email,
       fulfilled: false,
       paid: false,
       returned: false,
-      amount: 0,
+      amount: orderTotal,
       user_id: "guest" + `${uuidv4()}`,
       guestCheckout: true,
       guestId: uuidv4(),

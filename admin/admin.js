@@ -17,51 +17,10 @@ var User = mongoose.model("User", Schema.userSchema);
 // var Image = mongoose.model("Image", Schema.imageSchema);
 var Inventory = mongoose.model("Inventory", Schema.inventorySchema);
 
-// const { MONGO_HOSTNAME, MONGO_DB, MONGO_PORT } = process.env;
-// var mongoURI = `mongodb://${MONGO_HOSTNAME}:${MONGO_PORT}/${MONGO_DB}`;
-// var connection = mongoose.connection;
-// let gfs;
-// connection.once("open", () => {
-//   gfs = Grid(connection.db, mongoose.mongo);
-//   gfs.collection("imageUpload");
-// });
-
-// //for storing photos
-// let storage = new GridFsStorage({
-//   url: mongoURI,
-//   file: (req, file) => {
-//     return new Promise((resolve, reject) => {
-//       const fileInfo = {
-//         filename: file.originalname,
-//         bucketName: "imageUpload",
-//       };
-//       resolve(fileInfo);
-//     });
-//   },
-// });
-// const upload = multer({ storage });
-
-// app.post("/upload", upload.single("upload"), (req, res) => {
-//   res.json({ file: req.body.file });
-// });
-// app.get("/files", (req, res) => {
-//   gfs.files.find().toArray((err, files) => {
-//     //check if files exist
-//     if (!files || files.length == 0) {
-//       return res.status(404).json({
-//         err: "No files exist",
-//       });
-//     }
-//     // files exist
-//     return res.json(files);
-//   });
-// });
-//fetches all USERS
 app.get("/db", config.adminAuth, (req, res) => {
-  User.find().exec((err, users) => {
+  User.find({}, { password: 0 }).exec((err, users) => {
     if (err) {
-      handleError(err);
-      res.end();
+      res.send(err);
     }
     res.send(users);
   });
