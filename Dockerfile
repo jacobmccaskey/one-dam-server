@@ -11,7 +11,8 @@ WORKDIR /usr/src/app
 # Install Dependencies
 COPY package*.json ./
 
-RUN npm install && npm install -g nodemon
+RUN npm install && npm install -g nodemon && stripe listen --forward-to localhost:4545/stripe/paymentRecievedHook
+
 
 # Copy app source code
 COPY . .
