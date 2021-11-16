@@ -6,7 +6,7 @@
   "author": "Jake McCaskey",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.714.0",
+    "aws-sdk": "^2.814.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.23.0",
     "cors": "^2.8.5",
